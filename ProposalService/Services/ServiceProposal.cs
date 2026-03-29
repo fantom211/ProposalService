@@ -196,5 +196,20 @@ namespace ProposalService.Services
             return true;
         }
 
+        public async Task<Dictionary<Guid, List<Guid>>> GetExecutorsByTaskIdsAsync(List<Guid> taskIds)
+        {
+            var result = await _context.Proposals
+            .Where(p => taskIds.Contains(p.TaskId))
+            .GroupBy(p => p.TaskId)
+            .Select(g => new
+            {
+                TaskId = g.Key,
+                Executors = g.Select(x => x.ExecutorId).Distinct().ToList()
+            })
+            .ToListAsync();
+
+            return result.ToDictionary(x => x.TaskId, x => x.Executors);
+        }
+
     }
 }

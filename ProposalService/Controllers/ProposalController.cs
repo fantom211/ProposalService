@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using ProposalService.Models.DTOs;
 using ProposalService.Services;
+using WorkService.Models.DTOs;
 
 namespace ProposalService.Controllers
 {
@@ -87,5 +89,17 @@ namespace ProposalService.Controllers
             return Ok();
         }
 
+        [HttpPost("by-tasks")]
+        public async Task<ActionResult<GetExecutorsByTasksResponse>> GetByTasks(
+        [FromBody] GetExecutorsByTasksRequest request)
+        {
+
+            var data = await _service.GetExecutorsByTaskIdsAsync(request.TaskIds);
+
+            return Ok(new GetExecutorsByTasksResponse
+            {
+                Data = data
+            });
+        }
     }
 }
