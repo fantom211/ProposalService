@@ -41,7 +41,7 @@ namespace ProposalService.Services
             await _notifyService.SendNotificationAsync(new NotificationDto
             {
                 Type = "RESPOND",
-                Recipient = new Recipient { UserId = task.CreatedByUserId}
+                Recipient = new Recipient { UserId = task.CreatedByUserId }
             });
 
             _context.Proposals.Add(proposal);
@@ -55,17 +55,35 @@ namespace ProposalService.Services
             };
         }
 
-        public async Task<List<ProposalDto>> GetAll()
+        public async Task<PagedResultDto<ProposalDto>> GetAll(int page, int limit)
         {
-            return await _context.Proposals
-                .Select(p=> new ProposalDto
+            var query = _context.Proposals.AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var proposals = await query
+                .OrderByDescending(p => p.Id)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(p => new ProposalDto
                 {
                     Id = p.Id,
                     TaskId = p.TaskId,
                     ExecutorId = p.ExecutorId,
                     Status = p.Status
-                }).ToListAsync();
+                })
+                .ToListAsync();
+
+            return new PagedResultDto<ProposalDto>
+            {
+                Data = proposals,
+                Total = total,
+                Page = page,
+                Limit = limit
+            };
         }
+
+        
 
         public async Task<List<ProposalDto>> GetByTaskId(Guid taskId)
         {

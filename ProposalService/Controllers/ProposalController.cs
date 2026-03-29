@@ -16,9 +16,20 @@ namespace ProposalService.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            var proposals = await _service.GetAll();
+            const int maxLimit = 50;
+
+            if (page < 1)
+                page = 1;
+
+            if (limit < 1)
+                limit = 10;
+
+            if (limit > maxLimit)
+                limit = maxLimit;
+
+            var proposals = await _service.GetAll(page, limit);
             return Ok(proposals);
         }
 
