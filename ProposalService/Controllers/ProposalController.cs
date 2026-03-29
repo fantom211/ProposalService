@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ProposalService.Services;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProposalService.Models.DTOs;
+using ProposalService.Services;
 
 namespace ProposalService.Controllers
 {
@@ -42,9 +43,19 @@ namespace ProposalService.Controllers
         }
 
         [HttpGet("task/{taskId}")]
-        public async Task<IActionResult> GetByTaskId(Guid taskId)
+        public async Task<IActionResult> GetByTaskId(Guid taskId, [FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            var proposals = await _service.GetByTaskId(taskId);
+            const int maxLimit = 50;
+
+            if (page < 1)
+                page = 1;
+
+            if (limit < 1)
+                limit = 10;
+
+            if (limit > maxLimit)
+                limit = maxLimit;
+            var proposals = await _service.GetByTaskId(taskId, page, limit);
             return Ok(proposals);
         }
 

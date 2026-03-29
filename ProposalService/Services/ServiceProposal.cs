@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ProposalService.Data;
 using ProposalService.Models;
@@ -85,18 +86,35 @@ namespace ProposalService.Services
 
         
 
-        public async Task<List<ProposalDto>> GetByTaskId(Guid taskId)
+        public async Task<PagedResultDto<ProposalDto>> GetByTaskId(Guid taskId, int page, int limit)
         {
-            return await _context.Proposals
-           .Where(p => p.TaskId == taskId)
-           .Select(p => new ProposalDto
-           {
-               Id = p.Id,
-               TaskId = p.TaskId,
-               ExecutorId = p.ExecutorId,
-               Status = p.Status
-           })
-           .ToListAsync();
+
+            var query = _context.Proposals
+               .Where(p => p.TaskId == taskId);
+               
+
+            var total = await query.CountAsync();
+
+            var proposals = await query
+                .OrderByDescending(p => p.Id)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(p => new ProposalDto
+                {
+                    Id = p.Id,
+                    TaskId = p.TaskId,
+                    ExecutorId = p.ExecutorId,
+                    Status = p.Status
+                })
+                .ToListAsync();
+
+            return new PagedResultDto<ProposalDto>
+            {
+                Data = proposals,
+                Total = total,
+                Page = page,
+                Limit = limit
+            };
         }
 
         public async Task<List<ProposalDto>> GetByUserId(Guid userId)
