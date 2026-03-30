@@ -27,12 +27,12 @@ namespace ProposalService.Services
 
         
 
-        public async Task<ProposalDto> Create(CreateProposalDto dto)
+        public async Task<ProposalDto> Create(Guid executorId, CreateProposalDto dto)
         {
             var proposal = new Proposal
             {
                 TaskId = dto.TaskId,
-                ExecutorId = dto.ExecutorId,
+                ExecutorId = executorId,
                 Status = "pending"
             };
 
