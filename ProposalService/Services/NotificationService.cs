@@ -5,7 +5,7 @@ namespace ProposalService.Services
     public class NotificationService
     {
         private readonly HttpClient _httpClient;
-        private const string Url = "https://472c-192-124-209-165.ngrok-free.app/notification/notifications/send";
+        private const string Url = "http://192.168.1.10:8077/notifications/send";
 
         public NotificationService(HttpClient httpClient)
         {
