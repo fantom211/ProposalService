@@ -6,6 +6,7 @@ using ProposalService.Data;
 using ProposalService.Models;
 using ProposalService.Models.DTOs;
 using ProposalService.Models.Entities;
+using static WorkService.Exceptions.MyCustomExceptions;
 
 namespace ProposalService.Services
 {
@@ -32,14 +33,14 @@ namespace ProposalService.Services
             var task = await _httpClient
                  .GetFromJsonAsync<TaskDto>($"api/tasks/{dto.TaskId}");
 
-            if (task == null) throw new Exception("Задача не найдена");
+            if (task == null) throw new NotFoundException("Задача не найдена");
 
-            if (task.CreatedByUserId == executorId) throw new Exception("Нельзя откликнуться на свою задачу");
+            if (task.CreatedByUserId == executorId) throw new ForbiddenException("Нельзя откликнуться на свою задачу");
 
             var exists = await _context.Proposals
                 .AnyAsync(p => p.TaskId == dto.TaskId && p.ExecutorId == executorId);
 
-            if (exists) throw new Exception("Вы уже откликнулись на эту задачу");
+            if (exists) throw new ConflictException("Вы уже откликнулись на эту задачу");
 
             var proposal = new Proposal
             {

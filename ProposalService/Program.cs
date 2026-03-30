@@ -35,6 +35,8 @@ builder.Services.AddHttpClient<ServiceProposal>(client =>
 });
 builder.Services.AddScoped<NotificationService>();
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -43,7 +45,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
