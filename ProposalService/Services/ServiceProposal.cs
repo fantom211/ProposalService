@@ -25,19 +25,28 @@ namespace ProposalService.Services
             _httpClient = httpClient;
         }
 
-        
+
 
         public async Task<ProposalDto> Create(Guid executorId, CreateProposalDto dto)
         {
+            var task = await _httpClient
+                 .GetFromJsonAsync<TaskDto>($"api/tasks/{dto.TaskId}");
+
+            if (task == null) throw new Exception("Задача не найдена");
+
+            if (task.CreatedByUserId == executorId) throw new Exception("Нельзя откликнуться на свою задачу");
+
+            var exists = await _context.Proposals
+                .AnyAsync(p => p.TaskId == dto.TaskId && p.ExecutorId == executorId);
+
+            if (exists) throw new Exception("Вы уже откликнулись на эту задачу");
+
             var proposal = new Proposal
             {
                 TaskId = dto.TaskId,
                 ExecutorId = executorId,
                 Status = "pending"
             };
-
-            var task = await _httpClient
-                 .GetFromJsonAsync<TaskDto>($"api/tasks/{dto.TaskId}");
 
             await _notifyService.SendNotificationAsync(new NotificationDto
             {
