@@ -38,7 +38,7 @@ namespace ProposalService.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Create(
-            [FromHeader(Name = "X-User-Id")]
+            [FromHeader(Name = "X-User-Id")] Guid executorId,
             [FromBody] CreateProposalDto dto)
         {
             var proposal = await _service.Create(executorId, dto);
