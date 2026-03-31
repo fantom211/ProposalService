@@ -13,7 +13,7 @@ namespace ProposalService.Services
         public async Task SendNotificationAsync(NotificationDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(
-                "/notification/notifications/send", 
+                "/notifications/send",
                 dto);
             response.EnsureSuccessStatusCode();
         }
