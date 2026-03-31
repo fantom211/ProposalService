@@ -13,25 +13,24 @@ namespace ProposalService.Services
     public class ServiceProposal
     {
         private readonly AppDbContext _context;
-        private readonly NotificationService _notifyService;
-        private readonly HttpClient _httpClient;
+        private readonly NotificationServiceClient _notifyService;
+        private readonly WorkServiceClient _workService;
 
         public ServiceProposal(
             AppDbContext context,
-            NotificationService notifyService,
-            HttpClient httpClient)
+            NotificationServiceClient notifyService,
+            WorkServiceClient workService)
         {
             _context = context;
             _notifyService = notifyService;
-            _httpClient = httpClient;
+            _workService = workService;
         }
 
 
 
         public async Task<ProposalDto> Create(Guid executorId, CreateProposalDto dto)
         {
-            var task = await _httpClient
-                 .GetFromJsonAsync<TaskDto>($"api/tasks/{dto.TaskId}");
+            var task = await _workService.GetTask(dto.TaskId);
 
             if (task == null) throw new NotFoundException("Задача не найдена");
 
@@ -49,14 +48,18 @@ namespace ProposalService.Services
                 Status = "pending"
             };
 
+            
+
+            _context.Proposals.Add(proposal);
+            await _context.SaveChangesAsync();
+
             await _notifyService.SendNotificationAsync(new NotificationDto
             {
+                Title = task.Title,
                 Type = "RESPOND",
                 Recipient = new Recipient { UserId = task.CreatedByUserId }
             });
 
-            _context.Proposals.Add(proposal);
-            await _context.SaveChangesAsync();
             return new ProposalDto
             {
                 Id = proposal.Id,
@@ -93,8 +96,6 @@ namespace ProposalService.Services
                 Limit = limit
             };
         }
-
-        
 
         public async Task<PagedResultDto<ProposalDto>> GetByTaskId(Guid taskId, int page, int limit)
         {
@@ -164,10 +165,14 @@ namespace ProposalService.Services
 
             if (proposal == null) return false;
 
+            var task = await _workService.GetTask(proposal.TaskId);
+
+            if (task == null) throw new NotFoundException("Задача не найдена");
+
             //если уже подтверждено
             var alreadyAccepted = await _context.Proposals
                 .AnyAsync(p=>p.TaskId == proposal.TaskId && p.Status == "accepted");
-            if (alreadyAccepted) return false;
+            if (alreadyAccepted) throw new BadRequestException("Задача уже утверждена");
 
             
             proposal.Status = "accepted";
@@ -186,6 +191,7 @@ namespace ProposalService.Services
             //отправка уведомление исполнителю о подтверждении
             await _notifyService.SendNotificationAsync(new NotificationDto
             {
+                Title = task.Title,
                 Type = "APPLICATION_APPROVED",
                 Recipient = new Recipient { UserId = proposal.ExecutorId }
             });
@@ -193,11 +199,7 @@ namespace ProposalService.Services
             //отправка события
             try
             {
-                using var http = new HttpClient();
-                await http.PostAsJsonAsync(
-                    "http://localhost:5017/api/tasks/proposal-accepted",
-                    new ProposalAcceptedDto { TaskId = proposal.TaskId}
-                );
+                await _workService.NotifyProposalAccepted(proposal.TaskId);
             }
             catch (Exception ex)
             {

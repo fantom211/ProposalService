@@ -5,6 +5,9 @@ namespace ProposalService.Models.DTOs
 {
     public class NotificationDto
     {
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
+
         [JsonPropertyName("type")]
         public string Type { get; set; }
 

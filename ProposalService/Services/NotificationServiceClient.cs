@@ -2,19 +2,19 @@
 
 namespace ProposalService.Services
 {
-    public class NotificationService
+    public class NotificationServiceClient
     {
         private readonly HttpClient _httpClient;
-        private const string Url = "https://472c-192-124-209-165.ngrok-free.app/notification/notifications/send";
-
-        public NotificationService(HttpClient httpClient)
+        public NotificationServiceClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
         public async Task SendNotificationAsync(NotificationDto dto)
         {
-            var response = await _httpClient.PostAsJsonAsync(Url, dto);
+            var response = await _httpClient.PostAsJsonAsync(
+                "/notification/notifications/send", 
+                dto);
             response.EnsureSuccessStatusCode();
         }
 
