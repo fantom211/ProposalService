@@ -1,0 +1,32 @@
+﻿services:
+
+  proposal-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proposal-service
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - ConnectionStrings__DefaultConnection=Host=proposal-service-db;Port=5432;Database=ProposalServiceDb;Username=postgres;Password=admin
+    depends_on:
+      - proposal-service-db
+    restart: always
+
+  proposal-service-db:
+    image: postgres:16
+    container_name: proposal-service-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ProposalServiceDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - proposal_db:/var/lib/postgresql/data
+
+volumes:
+  proposal_db:
