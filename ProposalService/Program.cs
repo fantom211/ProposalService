@@ -27,16 +27,30 @@ builder.Services.AddControllers()
 builder.Services.AddScoped<NotificationServiceClient>();
 builder.Services.AddScoped<WorkServiceClient>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 builder.Services.AddHttpClient<NotificationServiceClient>((sp, client) =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
+    var enabled = config.GetValue<bool>("ExternalServices:NotificationServiceEnabled");
+
+    if (!enabled) return;
+
     var url = config["ExternalServices:NotificationService"];
     if (string.IsNullOrEmpty(url))
         throw new InvalidOperationException("NotificationService URL is not configured.");
 
     client.BaseAddress = new Uri(url);
-
 });
 
 builder.Services.AddHttpClient<WorkServiceClient>((sp, client) =>
@@ -68,6 +82,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("Frontend");
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 //app.UseHttpsRedirection();
