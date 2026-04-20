@@ -87,8 +87,6 @@ app.UseCors("Frontend");
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 //app.UseHttpsRedirection();
-app.UseSwagger();
-app.UseSwaggerUI();
 
 app.UseAuthorization();
 

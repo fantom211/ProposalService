@@ -12,24 +12,27 @@ namespace ProposalService.Services
             _enabled = config.GetValue<bool>("Services:NotificationServiceEnabled");
         }
 
-        //public async Task SendNotificationAsync(NotificationDto dto)
-        //{
-        //    var response = await _httpClient.PostAsJsonAsync(
-        //        "notification/notifications/send", 
-        //        dto);
-        //    response.EnsureSuccessStatusCode();
-        //}
-
         public async Task SendNotificationAsync(NotificationDto dto)
         {
-            if (!_enabled)
-                return;
+            if (!_enabled) return;
 
             var response = await _httpClient.PostAsJsonAsync(
-                "/notifications/send",
+                "notification/notifications/send",
                 dto);
             response.EnsureSuccessStatusCode();
         }
+
+        //Заглушка
+        //public async Task SendNotificationAsync(NotificationDto dto)
+        //{
+        //    if (!_enabled)
+        //        return;
+
+        //    var response = await _httpClient.PostAsJsonAsync(
+        //        "/notifications/send",
+        //        dto);
+        //    response.EnsureSuccessStatusCode();
+        //}
 
     }
 }
