@@ -128,10 +128,16 @@ namespace ProposalService.Services
             };
         }
 
-        public async Task<List<ProposalDto>> GetByUserId(Guid userId)
+        public async Task<PagedResultDto<ProposalDto>> GetMyProposals(Guid userId, int page, int limit)
         {
-            return await _context.Proposals
-            .Where(p => p.ExecutorId == userId)
+            var query = _context.Proposals
+                .Where(p => p.ExecutorId == userId)
+                .OrderByDescending(p => p.Id);
+
+            var total = await query.CountAsync();
+            var proposals = await query
+            .Skip((page-1) * limit)
+            .Take(limit)
             .Select(p => new ProposalDto
             {
                 Id = p.Id,
@@ -140,6 +146,14 @@ namespace ProposalService.Services
                 Status = p.Status
             })
             .ToListAsync();
+
+            return new PagedResultDto<ProposalDto>
+            {
+                Data = proposals,
+                Total = total,
+                Page = page,
+                Limit = limit
+            };
         }
         public async Task<ProposalDto?> UpdateStatus(Guid id, string status)
         {
