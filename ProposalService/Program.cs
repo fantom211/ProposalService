@@ -27,17 +27,6 @@ builder.Services.AddControllers()
 builder.Services.AddScoped<NotificationServiceClient>();
 builder.Services.AddScoped<WorkServiceClient>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Frontend", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
 
 builder.Services.AddHttpClient<NotificationServiceClient>((sp, client) =>
 {
