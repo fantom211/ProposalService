@@ -62,10 +62,21 @@ namespace ProposalService.Controllers
             return Ok(proposals);
         }
 
-        [HttpGet("user")]
-        public async Task<IActionResult> GetByUserId([FromHeader(Name = "X-User-Id")] Guid userId)
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyProposals([FromHeader(Name = "X-User-Id")] Guid userId, [FromQuery] int page = 1, [FromQuery] int limit = 10)
         {
-            var proposals = await _service.GetByUserId(userId);
+            const int maxLimit = 50;
+
+            if (page < 1)
+                page = 1;
+
+            if (limit < 1)
+                limit = 10;
+
+            if (limit > maxLimit)
+                limit = maxLimit;
+
+            var proposals = await _service.GetMyProposals(userId, page, limit);
             return Ok(proposals);
         }
 
